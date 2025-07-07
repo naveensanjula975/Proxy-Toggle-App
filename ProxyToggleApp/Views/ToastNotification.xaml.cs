@@ -8,6 +8,8 @@ namespace ProxyToggleApp.Views
 {
     public partial class ToastNotification : UserControl
     {
+        private System.Windows.Threading.DispatcherTimer? _autoHideTimer;
+
         public static readonly DependencyProperty MessageProperty =
             DependencyProperty.Register("Message", typeof(string), typeof(ToastNotification), new PropertyMetadata(string.Empty));
 
@@ -31,8 +33,17 @@ namespace ProxyToggleApp.Views
             InitializeComponent();
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        private void CloseButton_Click(object? sender, RoutedEventArgs? e)
         {
+            CloseToast();
+        }
+
+        public void CloseToast()
+        {
+            // Stop the auto-hide timer if it's running
+            _autoHideTimer?.Stop();
+            _autoHideTimer = null;
+            
             var slideOut = new DoubleAnimation(0, -ActualHeight, TimeSpan.FromMilliseconds(300));
             slideOut.EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn };
             slideOut.Completed += (s, args) => { Visibility = Visibility.Collapsed; };
@@ -41,16 +52,23 @@ namespace ProxyToggleApp.Views
 
         public void ShowToast()
         {
+            // Stop any existing timer
+            _autoHideTimer?.Stop();
+            
             Visibility = Visibility.Visible;
             var slideIn = new DoubleAnimation(-ActualHeight, 20, TimeSpan.FromMilliseconds(300));
             slideIn.EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut };
             BeginAnimation(Canvas.TopProperty, slideIn);
 
             // Auto-hide after 5 seconds
-            var timer = new System.Windows.Threading.DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(5);
-            timer.Tick += (s, e) => { CloseButton_Click(null, null); timer.Stop(); };
-            timer.Start();
+            _autoHideTimer = new System.Windows.Threading.DispatcherTimer();
+            _autoHideTimer.Interval = TimeSpan.FromSeconds(5);
+            _autoHideTimer.Tick += (s, e) => { 
+                CloseToast(); 
+                _autoHideTimer.Stop(); 
+                _autoHideTimer = null; 
+            };
+            _autoHideTimer.Start();
         }
     }
 

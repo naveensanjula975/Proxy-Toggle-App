@@ -10,6 +10,7 @@ namespace ProxyToggleApp.Services
     {
         Task<AppSettings> LoadSettingsAsync();
         Task SaveSettingsAsync(AppSettings settings);
+        Task<bool> SettingsExistAsync();
         AppSettings GetDefaultSettings();
     }
 
@@ -61,6 +62,11 @@ namespace ProxyToggleApp.Services
                 // Log exception if needed
                 System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
             }
+        }
+
+        public async Task<bool> SettingsExistAsync()
+        {
+            return await Task.FromResult(File.Exists(_settingsPath));
         }
 
         public AppSettings GetDefaultSettings()
