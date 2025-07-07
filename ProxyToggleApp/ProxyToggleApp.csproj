@@ -5,6 +5,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>Proxy Toggle App</AssemblyTitle>
     <AssemblyDescription>Windows proxy configuration toggle utility</AssemblyDescription>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>

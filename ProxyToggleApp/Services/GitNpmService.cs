@@ -2,20 +2,25 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using ProxyToggleApp.Models;
 
 namespace ProxyToggleApp.Services
 {
     public class GitNpmService : IGitNpmService
     {
         private readonly ILogger<GitNpmService> _logger;
+        private readonly AppSettings _settings;
 
-        public GitNpmService(ILogger<GitNpmService> logger)
+        public GitNpmService(ILogger<GitNpmService> logger, AppSettings settings)
         {
             _logger = logger;
+            _settings = settings;
         }
 
         public async Task<bool> SetGitProxyAsync(string proxyUrl)
         {
+            if (!_settings.EnableGitProxy) return true; // Skip if disabled
+
             try
             {
                 var result = await ExecuteCommandAsync("git", $"config --global http.proxy {proxyUrl}");
@@ -39,6 +44,8 @@ namespace ProxyToggleApp.Services
 
         public async Task<bool> UnsetGitProxyAsync()
         {
+            if (!_settings.EnableGitProxy) return true; // Skip if disabled
+
             try
             {
                 var result = await ExecuteCommandAsync("git", "config --global --unset http.proxy");
@@ -62,6 +69,8 @@ namespace ProxyToggleApp.Services
 
         public async Task<bool> SetNpmProxyAsync(string proxyUrl)
         {
+            if (!_settings.EnableNpmProxy) return true; // Skip if disabled
+
             try
             {
                 var result = await ExecuteCommandAsync("npm", $"config set proxy {proxyUrl}");
@@ -85,6 +94,8 @@ namespace ProxyToggleApp.Services
 
         public async Task<bool> UnsetNpmProxyAsync()
         {
+            if (!_settings.EnableNpmProxy) return true; // Skip if disabled
+
             try
             {
                 var result = await ExecuteCommandAsync("npm", "config delete proxy");

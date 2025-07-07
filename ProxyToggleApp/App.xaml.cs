@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using ProxyToggleApp.Services;
 using ProxyToggleApp.ViewModels;
 using ProxyToggleApp.Views;
+using ProxyToggleApp.Models;
 
 namespace ProxyToggleApp
 {
@@ -41,10 +42,14 @@ namespace ProxyToggleApp
             return Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
+                    // Register settings as singleton
+                    services.AddSingleton<AppSettings>();
+                    
                     // Register services
                     services.AddSingleton<IProxyService, ProxyService>();
                     services.AddSingleton<IGitNpmService, GitNpmService>();
                     services.AddSingleton<INotificationService, NotificationService>();
+                    services.AddSingleton<ISettingsService, SettingsService>();
 
                     // Register ViewModels
                     services.AddTransient<MainViewModel>();

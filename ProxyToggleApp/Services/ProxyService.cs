@@ -2,20 +2,23 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using Microsoft.Extensions.Logging;
+using ProxyToggleApp.Models;
 
 namespace ProxyToggleApp.Services
 {
     public class ProxyService : IProxyService
     {
         private readonly ILogger<ProxyService> _logger;
+        private readonly AppSettings _settings;
         private const string REGISTRY_PATH = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings";
         private const string PROXY_ENABLE_KEY = "ProxyEnable";
         private const string PROXY_SERVER_KEY = "ProxyServer";
         private const string PROXY_OVERRIDE_KEY = "ProxyOverride";
 
-        public ProxyService(ILogger<ProxyService> logger)
+        public ProxyService(ILogger<ProxyService> logger, AppSettings settings)
         {
             _logger = logger;
+            _settings = settings;
         }
 
         public async Task<bool> IsProxyEnabledAsync()
@@ -52,14 +55,19 @@ namespace ProxyToggleApp.Services
                     key.SetValue(PROXY_ENABLE_KEY, 1, RegistryValueKind.DWord);
                     key.SetValue(PROXY_SERVER_KEY, proxyServer, RegistryValueKind.String);
                     
-                    if (!string.IsNullOrEmpty(proxyOverride))
+                    // Use settings proxy override if none provided
+                    var overrideToUse = proxyOverride ?? _settings.ProxyOverride;
+                    if (!string.IsNullOrEmpty(overrideToUse))
                     {
-                        key.SetValue(PROXY_OVERRIDE_KEY, proxyOverride, RegistryValueKind.String);
+                        key.SetValue(PROXY_OVERRIDE_KEY, overrideToUse, RegistryValueKind.String);
                     }
 
-                    // Set environment variables
-                    Environment.SetEnvironmentVariable("HTTP_PROXY", proxyServer, EnvironmentVariableTarget.User);
-                    Environment.SetEnvironmentVariable("HTTPS_PROXY", proxyServer, EnvironmentVariableTarget.User);
+                    // Set environment variables only if enabled in settings
+                    if (_settings.SetEnvironmentVariables)
+                    {
+                        Environment.SetEnvironmentVariable("HTTP_PROXY", proxyServer, EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable("HTTPS_PROXY", proxyServer, EnvironmentVariableTarget.User);
+                    }
 
                     _logger.LogInformation("Proxy enabled successfully");
                     return true;
@@ -89,9 +97,12 @@ namespace ProxyToggleApp.Services
                     key.DeleteValue(PROXY_SERVER_KEY, false);
                     key.DeleteValue(PROXY_OVERRIDE_KEY, false);
 
-                    // Remove environment variables
-                    Environment.SetEnvironmentVariable("HTTP_PROXY", null, EnvironmentVariableTarget.User);
-                    Environment.SetEnvironmentVariable("HTTPS_PROXY", null, EnvironmentVariableTarget.User);
+                    // Remove environment variables only if they were set by settings
+                    if (_settings.SetEnvironmentVariables)
+                    {
+                        Environment.SetEnvironmentVariable("HTTP_PROXY", null, EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable("HTTPS_PROXY", null, EnvironmentVariableTarget.User);
+                    }
 
                     _logger.LogInformation("Proxy disabled successfully");
                     return true;
