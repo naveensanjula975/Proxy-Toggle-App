@@ -1,0 +1,114 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore ProxyToggleApp/ProxyToggleApp.csproj
+      
+    - name: Build application
+      run: dotnet publish ProxyToggleApp/ProxyToggleApp.csproj -c Release -r win-x64 --self-contained true -o release
+      
+    - name: Get version from tag
+      id: get_version
+      run: |
+        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Version: $version"
+      shell: pwsh
+      
+    - name: Create release package
+      run: |
+        $version = "${{ steps.get_version.outputs.VERSION }}"
+        $zipName = "ProxyToggleApp-v$version-win-x64.zip"
+        
+        # Copy additional files to release folder
+        Copy-Item "README.md" -Destination "release/" -Force
+        
+        # Create zip package
+        Compress-Archive -Path "release/*" -DestinationPath $zipName -Force
+        
+        # Calculate SHA256 hash
+        $hash = Get-FileHash $zipName -Algorithm SHA256
+        $hash.Hash | Out-File -FilePath "$zipName.sha256" -Encoding utf8
+        
+        echo "PACKAGE_NAME=$zipName" >> $env:GITHUB_OUTPUT
+        echo "PACKAGE_HASH=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+      shell: pwsh
+      id: package
+      
+    - name: Create Release
+      uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Proxy Toggle App v${{ steps.get_version.outputs.VERSION }}
+        body: |
+          # Proxy Toggle App v${{ steps.get_version.outputs.VERSION }}
+          
+          ## 🚀 Features
+          - System-wide proxy management for Windows
+          - Git & npm proxy integration  
+          - Modern Fluent Design UI
+          - System tray integration
+          - Settings persistence
+          
+          ## 📥 Download
+          - **Windows (64-bit):** `${{ steps.package.outputs.PACKAGE_NAME }}`
+          - **SHA256:** `${{ steps.package.outputs.PACKAGE_HASH }}`
+          
+          ## 📋 Requirements
+          - Windows 10 (version 1809) or Windows 11
+          - x64 architecture
+          
+          ## 🛠️ Installation
+          1. Download and extract the zip file
+          2. Run `ProxyToggleApp.exe`
+          3. No additional installation required!
+          
+          ## 🔒 Security
+          - Self-contained package with all dependencies
+          - No registry modifications outside of Windows proxy settings
+          - Source code available for review
+          
+          For detailed documentation, see the [README](https://github.com/${{ github.repository }}/blob/main/README.md).
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset - Application
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ steps.package.outputs.PACKAGE_NAME }}
+        asset_name: ${{ steps.package.outputs.PACKAGE_NAME }}
+        asset_content_type: application/zip
+        
+    - name: Upload Release Asset - Checksum
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ steps.package.outputs.PACKAGE_NAME }}.sha256
+        asset_name: ${{ steps.package.outputs.PACKAGE_NAME }}.sha256
+        asset_content_type: text/plain
