@@ -1,0 +1,112 @@
+## Ignore Visual Studio temporary files, build results, and
+## user-specific files.
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+*.log
+
+# Uncomment if you have tasks that create the project's static files
+#wwwroot/
+
+# Rider project files
+.idea/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Mono Auto Generated Files
+mono_crash.*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# JetBrains Rider
+.idea/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Templated files
+*.template.config
+
+# dotCover
+*.dotCover
+
+# NCrunch
+*.ncrunch*
+.*ncrunchproject
+NCrunchTemp_*
+
+# Visual Studio Code
+.vscode/
+.history/
+
+# Dotnet CLI
+.vs/
+.vscode/
+.vscode-test/
+*.dbmdl
+*.bak
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Azure Pipelines
+.azure-pipelines/
+
+# Node.js (if using with frontend)
+node_modules/
+
+# Logs
+*.log
+*.tlog
+
+# Transformed files
+*.dll
+*.exe
+*.pdb
+*.cache
+*.mdb
+*.ilk
+*.meta
+*.iobj
+*.ipdb
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+*.nuspec
+
+# Publish
+publish/
+out/
+*.publish.xml
+
+# Others
+*.db
+*.sqlite
+*.sdf
+
+# Dotnet watch
+**/*.hotreload.json

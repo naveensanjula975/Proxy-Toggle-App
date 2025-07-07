@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using ProxyToggleApp.Services;
+using ProxyToggleApp.Views;
 
 namespace ProxyToggleApp.ViewModels
 {
@@ -30,6 +31,7 @@ namespace ProxyToggleApp.ViewModels
         public ICommand EnableProxyCommand { get; }
         public ICommand DisableProxyCommand { get; }
         public ICommand RefreshStatusCommand { get; }
+        public ICommand OpenSettingsCommand { get; }
 
         public MainViewModel(
             IProxyService proxyService,
@@ -45,6 +47,7 @@ namespace ProxyToggleApp.ViewModels
             EnableProxyCommand = new AsyncRelayCommand(EnableProxyAsync, () => !IsOperationInProgress);
             DisableProxyCommand = new AsyncRelayCommand(DisableProxyAsync, () => !IsOperationInProgress);
             RefreshStatusCommand = new AsyncRelayCommand(RefreshStatusAsync, () => !IsOperationInProgress);
+            OpenSettingsCommand = new RelayCommand(OpenSettings);
 
             // Load initial status
             _ = Task.Run(RefreshStatusAsync);
@@ -208,6 +211,12 @@ namespace ProxyToggleApp.ViewModels
             {
                 IsOperationInProgress = false;
             }
+        }
+
+        private void OpenSettings()
+        {
+            var settingsDialog = new SettingsDialog();
+            settingsDialog.ShowDialog();
         }
     }
 }

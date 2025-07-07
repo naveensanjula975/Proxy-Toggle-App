@@ -1,0 +1,69 @@
+<UserControl x:Class="ProxyToggleApp.Views.ToastNotification"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:ProxyToggleApp.Views"
+             MaxWidth="400">
+    <Border x:Name="ToastBorder" 
+            CornerRadius="8" 
+            Padding="16,12"
+            Background="White"
+            BorderThickness="1"
+            BorderBrush="#FFE1E1E1">
+        <Border.Effect>
+            <DropShadowEffect Color="#40000000" Direction="270" ShadowDepth="4" BlurRadius="12"/>
+        </Border.Effect>
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Icon -->
+            <TextBlock Grid.Column="0" 
+                      x:Name="IconText"
+                      FontSize="16" 
+                      VerticalAlignment="Center" 
+                      Margin="0,0,12,0">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Text" Value="ℹ️"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding NotificationType, RelativeSource={RelativeSource AncestorType=local:ToastNotification}}" Value="Success">
+                                <Setter Property="Text" Value="✅"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding NotificationType, RelativeSource={RelativeSource AncestorType=local:ToastNotification}}" Value="Warning">
+                                <Setter Property="Text" Value="⚠️"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding NotificationType, RelativeSource={RelativeSource AncestorType=local:ToastNotification}}" Value="Error">
+                                <Setter Property="Text" Value="❌"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            
+            <!-- Message -->
+            <TextBlock Grid.Column="1" 
+                      Text="{Binding Message, RelativeSource={RelativeSource AncestorType=local:ToastNotification}}"
+                      FontSize="14" 
+                      Foreground="#FF323130"
+                      TextWrapping="Wrap"
+                      VerticalAlignment="Center"/>
+            
+            <!-- Close Button -->
+            <Button Grid.Column="2" 
+                   x:Name="CloseButton"
+                   Click="CloseButton_Click"
+                   Width="20" Height="20"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   Content="✕"
+                   FontSize="12"
+                   Foreground="#FF605E5C"
+                   Cursor="Hand"
+                   Margin="8,0,0,0"/>
+        </Grid>
+    </Border>
+</UserControl>
